@@ -26,6 +26,7 @@ MANIFEST
 
 # Secrets
 secrets/
+project_secrets/
 
 # PyInstaller
 build/
