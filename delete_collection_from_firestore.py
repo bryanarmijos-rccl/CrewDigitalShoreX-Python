@@ -2,7 +2,7 @@ import firebase_admin
 from firebase_admin import credentials, firestore
 
 # Firestore Setup (Replace with your Firebase credentials JSON file)
-FIREBASE_CREDENTIALS = "<your_credential_secrets>"
+FIREBASE_CREDENTIALS = "project_secrets/rccl-debug-firebase-adminsdk-m67fx-a59bd870ab.json"
 
 # Initilize Firestore
 cred = credentials.Certificate(FIREBASE_CREDENTIALS)

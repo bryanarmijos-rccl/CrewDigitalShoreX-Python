@@ -3,13 +3,18 @@ from firebase_admin import credentials, firestore
 from pymongo import MongoClient
 import certifi
 import time
+from project_secrets import mongo_secrets
+import json
 
 # MongoDB Connection (Replace with your credentials)
-MONGO_URI = "<your_credential_secrets>"
-MONGO_DB = "<database_name>"
+MONGO_URI = mongo_secrets.MONGO_URI
+MONGO_DB = mongo_secrets.MONGO_DB
 
 # Firestore Setup (Replace with your Firebase credentials JSON file)
-FIREBASE_CREDENTIALS = "<your_credential_secrets>"
+FIREBASE_CREDENTIALS = "project_secrets/rccl-debug-firebase-adminsdk-m67fx-a59bd870ab.json"
+
+# Booking Guest ids Json file path
+JSON_FILE_PATH = "generated/rccl.BookingGuestIds.json"
 
 # Initialize Firestore
 cred = credentials.Certificate(FIREBASE_CREDENTIALS)
@@ -19,6 +24,11 @@ db_firestore = firestore.client()
 # Connection to MongoDB
 client = MongoClient(MONGO_URI, tlsCAFile=certifi.where())
 db_mongo = client[MONGO_DB]
+
+def load_guest_ids():
+    with open(JSON_FILE_PATH, "r") as f:
+        data = json.load(f)
+    return [entry["guestId"] for entry in data]
 
 def migrate_collection(mongo_collection, firestore_collection, field_mapping):
     """
@@ -30,7 +40,14 @@ def migrate_collection(mongo_collection, firestore_collection, field_mapping):
 
     print(f"Migration of '{mongo_collection}' started")
     start_time = time.time()  # Start time measurement
-    documents = db_mongo[mongo_collection].find()
+
+    if mongo_collection == "Guest":
+        # Query only documents with guestId in guest_ids list
+        guest_ids = load_guest_ids()
+        documents = db_mongo[mongo_collection].find({ "paxId": { "$in": guest_ids } })
+    else:
+        documents = db_mongo[mongo_collection].find()
+
     batch = db_firestore.batch()
     count = 0
     batch_size = 200
