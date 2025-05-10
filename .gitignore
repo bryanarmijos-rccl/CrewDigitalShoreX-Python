@@ -28,6 +28,9 @@ MANIFEST
 secrets/
 project_secrets/
 
+# Generated
+generated/
+
 # PyInstaller
 build/
 dist/
